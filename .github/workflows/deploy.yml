@@ -42,25 +42,19 @@ jobs:
             --exclude='.env' \
             ./
 
-      - name: Transfer files to VPS
-        uses: appleboy/scp-action@v0.1.15
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          source: "deployment.tar.gz"
-          target: "/tmp/"
-
       - name: Deploy to production
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            # Criar diretório
+            mkdir -p /var/www/barbeariasuite
             cd /var/www/barbeariasuite
+
+            # Parar serviço
             systemctl stop barbeariasuite || true
 
             # Backup atual
@@ -91,7 +85,7 @@ jobs:
             rm -f /tmp/deployment.tar.gz
 
       - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}

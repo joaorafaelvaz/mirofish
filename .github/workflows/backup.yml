@@ -33,14 +33,20 @@ jobs:
           mysqldump -h $DB_HOST -P $DB_PORT -u $DB_USER -p$DB_PASS $DB_NAME > backups/backup-$(date +%Y%m%d-%H%M%S).sql
 
       - name: Upload backup to VPS
-        uses: appleboy/scp-action@v0.1.15
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          source: "backups/*.sql"
-          target: "/var/backups/database/"
+          script: |
+            # Criar diretório de backup
+            mkdir -p /var/backups/database
+
+            # Copiar arquivos
+            tar -czf /tmp/backups.tar.gz -C /tmp backups/*.sql 2>/dev/null || true
+            tar -xzf /tmp/backups.tar.gz -C /var/backups/database 2>/dev/null || true
+            rm -f /tmp/backups.tar.gz
 
       - name: Clean up local backups
         run: rm -rf backups
