@@ -30,8 +30,8 @@ jobs:
 
       - name: Generate Prisma Client
         run: |
-          npx prisma generate
-          ls -la src/generated/prisma/
+          npx prisma generate --schema prisma/schema.prisma
+          ls -la src/generated/prisma/client/
 
       - name: Build application
         run: npm run build
