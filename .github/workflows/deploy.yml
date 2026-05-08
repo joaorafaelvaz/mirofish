@@ -26,7 +26,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --omit=dev
+        run: npm install
 
       - name: Build application
         run: npm run build
@@ -65,9 +65,9 @@ jobs:
             # Extrair nova versão
             tar -xzf /tmp/deployment.tar.gz -C /var/www/barbeariasuite
 
-            # Instalar dependências
+            # Instalar dependências (inclui dev para build)
             cd /var/www/barbeariasuite
-            npm install --omit=dev
+            npm ci --include=dev
 
             # Gerar Prisma Client
             npx prisma generate

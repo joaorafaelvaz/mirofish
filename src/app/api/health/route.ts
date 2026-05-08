@@ -1,6 +1,3 @@
-# BarbeariaSuite Health Check
-# Usado pelo systemd e reverse proxy para verificar saúde da aplicação
-
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
