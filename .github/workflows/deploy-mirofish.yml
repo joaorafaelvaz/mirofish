@@ -1,0 +1,123 @@
+name: Deploy MiroFish (Churn Microservice)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mirofish/**'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  deploy-mirofish:
+    name: Build and Deploy MiroFish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd mirofish
+          pip install -r requirements.txt
+
+      - name: Create deployment archive
+        run: |
+          cd mirofish
+          tar -czf /tmp/mirofish-deployment.tar.gz \
+            --exclude='__pycache__' \
+            --exclude='.venv' \
+            --exclude='.env' \
+            --exclude='*.log' \
+            --exclude='.git' \
+            .
+
+      - name: Transfer files to VPS
+        uses: appleboy/scp-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "/tmp/mirofish-deployment.tar.gz"
+          target: "/tmp/"
+
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            # Parar serviço
+            systemctl stop mirofish || true
+
+            # Backup atual
+            if [ -d "/opt/mirofish" ]; then
+              cp -r /opt/mirofish "/opt/mirofish-backup-$(date +%Y%m%d-%H%M%S)"
+            fi
+
+            # Criar diretório
+            mkdir -p /opt/mirofish
+            cd /opt/mirofish
+
+            # Extrair nova versão
+            tar -xzf /tmp/mirofish-deployment.tar.gz
+
+            # Criar ambiente virtual
+            python3 -m venv .venv
+            source .venv/bin/activate
+
+            # Instalar dependências
+            pip install -r requirements.txt
+
+            # Copiar .env
+            cp .env.example .env 2>/dev/null || true
+
+            # Criar service systemd
+            cat > /etc/systemd/system/mirofish.service <<'SERVICE'
+[Unit]
+Description=MiroFish - Churn Prediction Microservice
+After=network.target
+
+[Service]
+Type=simple
+User=barbearia
+WorkingDirectory=/opt/mirofish
+ExecStart=/opt/mirofish/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 3022
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/opt/mirofish
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+            # Recarregar systemd e iniciar
+            systemctl daemon-reload
+            systemctl enable mirofish
+            systemctl start mirofish
+
+            # Limpar
+            rm -f /tmp/mirofish-deployment.tar.gz
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            curl -f http://localhost:3022/health || echo "Health check failed"

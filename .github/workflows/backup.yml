@@ -1,0 +1,46 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 2 AM daily
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Create Database Backup
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Backup database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Parse DATABASE_URL
+          DB_HOST=$(echo $DATABASE_URL | cut -d'/' -f3 | cut -d':' -f1)
+          DB_PORT=$(echo $DATABASE_URL | cut -d'/' -f3 | cut -d':' -f2 | cut -d'@' -f1)
+          DB_USER=$(echo $DATABASE_URL | cut -d'/' -f3 | cut -d':' -f1)
+          DB_PASS=$(echo $DATABASE_URL | cut -d'/' -f3 | cut -d':' -f2 | cut -d'@' -f1)
+          DB_NAME=$(echo $DATABASE_URL | cut -d'/' -f4)
+
+          # Dump database
+          mysqldump -h $DB_HOST -P $DB_PORT -u $DB_USER -p$DB_PASS $DB_NAME > backups/backup-$(date +%Y%m%d-%H%M%S).sql
+
+      - name: Upload backup to VPS
+        uses: appleboy/scp-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "backups/*.sql"
+          target: "/var/backups/database/"
+
+      - name: Clean up local backups
+        run: rm -rf backups

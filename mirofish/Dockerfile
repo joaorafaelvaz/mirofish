@@ -20,7 +20,7 @@ COPY data/ ./data/ 2>/dev/null || true
 RUN mkdir -p /app/data/models
 
 # Expose port
-EXPOSE 8000
+EXPOSE 3022
 
 # Run application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3022"]

@@ -1,0 +1,29 @@
+[Unit]
+Description=BarbeariaSuite Next.js Application
+After=network.target
+After=mysql.service
+
+[Service]
+Type=notify
+User=barbearia
+Group=barbearia
+WorkingDirectory=/var/www/barbeariasuite
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/barbeariasuite/.next
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=barbeariasuite
+
+[Install]
+WantedBy=multi-user.target

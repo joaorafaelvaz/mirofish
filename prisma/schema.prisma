@@ -70,6 +70,11 @@ model Unit {
   email     String?
   network   Network    @relation(fields: [networkId], references: [id], onDelete: Cascade)
   users     UserUnit[]
+
+  churnPredictions ChurnPrediction[]
+  churnAcoes       ChurnAcao[]
+  churnLogs        ChurnLog[]
+
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -111,6 +116,40 @@ enum Role {
   MULTIFRANQUEADO
   GERENTE
   COLABORADOR
+}
+
+enum ChurnStatus {
+  ativo
+  em_risco
+  em_risco_alto
+  perdido
+}
+
+enum ChurnAcaoType {
+  email
+  sms
+  whatsapp
+  desconto
+  alerta
+}
+
+enum ChurnAcaoStatus {
+  pendente
+  enviado
+  falhou
+  ignorado
+  respondeu
+}
+
+enum ChurnProcessamentoType {
+  diario
+  manual
+  agendado
+}
+
+enum ChurnLogStatus {
+  success
+  error
 }
 
 model UserModulePermission {
@@ -638,6 +677,9 @@ model BarbershopCliente {
   updatedAt              DateTime  @updatedAt
 
   vendas        BarbershopVenda[]
+  churnPredictions ChurnPrediction[]
+  churnAcoes    ChurnAcao[]
+  churnLogs     ChurnLog[]
 
   @@unique([unitId, erpId])
   @@index([unitId])
@@ -1276,4 +1318,81 @@ model VipCamSettings {
   updatedAt         DateTime @updatedAt
 
   @@index([unitId])
+}
+
+// ─── Churn Prediction Models ──────────────────────────────────────────────────
+
+model ChurnPrediction {
+  id                  Int      @id @default(autoincrement())
+  clienteId           String
+  unidadeId           String
+  scoreRisco          Int      @db.TinyInt
+  probabilidade       Float
+  features            Json?
+  previsaoData        DateTime
+  proximaVisitaPrevista String?
+  status              String   @default("ativo")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  cliente BarbershopCliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  unidade Unit @relation(fields: [unidadeId], references: [id])
+
+  @@index([clienteId])
+  @@index([previsaoData])
+  @@index([status])
+  @@index([unidadeId])
+}
+
+model ChurnAcao {
+  id            Int      @id @default(autoincrement())
+  clienteId     String
+  unidadeId     String
+  tipoAcao      String
+  mensagem      String?
+  status        String @default("pendente")
+  dataAcao      DateTime?
+  responseData  Json?
+  createdAt     DateTime @default(now())
+
+  cliente BarbershopCliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  unidade Unit @relation(fields: [unidadeId], references: [id])
+
+  @@index([clienteId])
+  @@index([status])
+  @@index([dataAcao])
+}
+
+model ChurnLog {
+  id                    Int      @id @default(autoincrement())
+  unitId                String
+  clienteId             String
+  tipoProcessamento     String
+  registrosAnalizados   Int
+  previsoesGeradas      Int
+  acoesDisparadas       Int
+  status                String
+  erroMensagem          String?
+  durationMs            Int
+  createdAt             DateTime @default(now())
+
+  unit Unit @relation(fields: [unitId], references: [id])
+  cliente BarbershopCliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([unitId])
+  @@index([clienteId])
+  @@index([createdAt])
+}
+
+model ChurnAcaoConfig {
+  id              Int      @id @default(autoincrement())
+  unidadeId       String?
+  tipoAcao        String
+  ativo           Boolean @default(true)
+  mensagemTemplate String?
+  scoreMin        Int @default(0)
+  scoreMax        Int @default(100)
+  criadoEm        DateTime @default(now())
+
+  @@index([unidadeId])
 }

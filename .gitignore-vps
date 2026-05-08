@@ -1,0 +1,45 @@
+# BarbeariaSuite VPS - Arquivos e diretórios sensíveis
+
+# .env com secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Cache e temporários
+.next/cache/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# Dados de modelos (podem ser grandes)
+data/models/*.joblib
+data/models/*.pkl
+data/models/*.json
+
+# Backup
+backups/
+*.backup
+
+# MySQL
+mysql_data/
+*.sql
+*.sql.gz
+
+# Docker
+.docker/
+
+# IDE e editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

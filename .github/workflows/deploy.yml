@@ -1,0 +1,101 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_ENV: production
+  NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
+jobs:
+  deploy:
+    name: Build and Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Create deployment archive
+        run: |
+          tar -czf deployment.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.next/cache' \
+            --exclude='node_modules' \
+            --exclude='*.log' \
+            --exclude='.env' \
+            ./
+
+      - name: Transfer files to VPS
+        uses: appleboy/scp-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "deployment.tar.gz"
+          target: "/tmp/"
+
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd /var/www/barbeariasuite
+            systemctl stop barbeariasuite || true
+
+            # Backup atual
+            if [ -d "current" ]; then
+              cp -r current "backup-$(date +%Y%m%d-%H%M%S)"
+            fi
+
+            # Extrair nova versão
+            tar -xzf /tmp/deployment.tar.gz -C /var/www/barbeariasuite
+
+            # Instalar dependências
+            cd /var/www/barbeariasuite
+            npm ci --omit=dev
+
+            # Gerar Prisma Client
+            npx prisma generate
+
+            # Executar migrations
+            npx prisma migrate deploy
+
+            # Configurar .env
+            cp .env.example .env 2>/dev/null || true
+
+            # Iniciar serviço
+            systemctl start barbeariasuite
+
+            # Limpar arquivos temporários
+            rm -f /tmp/deployment.tar.gz
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            curl -f https://barbearia.franquiabv.xyz/api/health || curl -f http://localhost:3000/api/health
