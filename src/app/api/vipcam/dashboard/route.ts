@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { requireUnitId, handle, apiOk } from "@/lib/totalia/crud"
 import { subHours, subDays } from "date-fns"
 
+type EmocaoDominanteGroup = {
+  emocaoDominante: string
+  _count: { id: number }
+}
+
 export const GET = handle(async () => {
   const unitId = await requireUnitId()
   const now = new Date()
@@ -70,7 +75,7 @@ export const GET = handle(async () => {
     colaboradores,
     avgSatisfacao: avgSat._avg.satisfacaoScore ?? null,
     avgOcupacao: avgOcup._avg.pessoaCount ?? null,
-    emocoesDominantes: emocoesDominantes.map((e) => ({
+    emocoesDominantes: emocoesDominantes.map((e: EmocaoDominanteGroup) => ({
       emocao: e.emocaoDominante,
       count: e._count.id,
     })),

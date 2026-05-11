@@ -36,7 +36,7 @@ import {
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import type { Module } from "@/generated/prisma/enums"
+import { Module } from "@/generated/prisma/enums"
 
 type SidebarProps = {
   modules: Module[]
@@ -60,64 +60,64 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Barbearia VIP",
     items: [
-      { label: "Dashboard", href: "/barbershop", icon: BarChart2, module: "BARBERSHOP" },
-      { label: "Colaboradores", href: "/barbershop/colaboradores", icon: User, module: "BARBERSHOP" },
-      { label: "Clientes", href: "/barbershop/clientes", icon: Users, module: "BARBERSHOP" },
-      { label: "Vendas", href: "/barbershop/vendas", icon: Scissors, module: "BARBERSHOP" },
-      { label: "Metas", href: "/barbershop/metas", icon: Target, module: "BARBERSHOP" },
-      { label: "Comissoes", href: "/barbershop/comissoes", icon: Percent, module: "BARBERSHOP" },
+      { label: "Dashboard", href: "/barbershop", icon: BarChart2, module: Module.BARBERSHOP },
+      { label: "Colaboradores", href: "/barbershop/colaboradores", icon: User, module: Module.BARBERSHOP },
+      { label: "Clientes", href: "/barbershop/clientes", icon: Users, module: Module.BARBERSHOP },
+      { label: "Vendas", href: "/barbershop/vendas", icon: Scissors, module: Module.BARBERSHOP },
+      { label: "Metas", href: "/barbershop/metas", icon: Target, module: Module.BARBERSHOP },
+      { label: "Comissoes", href: "/barbershop/comissoes", icon: Percent, module: Module.BARBERSHOP },
     ],
   },
   {
     label: "Operacao",
     items: [
-      { label: "Gestão Total IA", href: "/totalia", icon: LayoutDashboard, module: "TOTALIA" },
+      { label: "Gestão Total IA", href: "/totalia", icon: LayoutDashboard, module: Module.TOTALIA },
     ],
   },
   {
     label: "Reputação",
     items: [
-      { label: "Dashboard", href: "/linkfood", icon: UtensilsCrossed, module: "LINKFOOD" },
-      { label: "Estabelecimentos", href: "/linkfood/businesses", icon: Store, module: "LINKFOOD" },
-      { label: "Avaliacoes", href: "/linkfood/reviews", icon: Star, module: "LINKFOOD" },
-      { label: "Integracoes", href: "/linkfood/integrations", icon: Plug, module: "LINKFOOD" },
+      { label: "Dashboard", href: "/linkfood", icon: UtensilsCrossed, module: Module.LINKFOOD },
+      { label: "Estabelecimentos", href: "/linkfood/businesses", icon: Store, module: Module.LINKFOOD },
+      { label: "Avaliacoes", href: "/linkfood/reviews", icon: Star, module: Module.LINKFOOD },
+      { label: "Integracoes", href: "/linkfood/integrations", icon: Plug, module: Module.LINKFOOD },
     ],
   },
   {
     label: "Instagram",
     items: [
-      { label: "Dashboard", href: "/instagram", icon: Bot, module: "INSTAGRAM" },
-      { label: "Aprovacoes", href: "/instagram/aprovacoes", icon: ClipboardCheck, module: "INSTAGRAM" },
-      { label: "Boas-vindas", href: "/instagram/bem-vindos", icon: UserCheck, module: "INSTAGRAM" },
-      { label: "Monitoramento", href: "/instagram/monitoramento", icon: Eye, module: "INSTAGRAM" },
-      { label: "Logs", href: "/instagram/logs", icon: FileText, module: "INSTAGRAM" },
-      { label: "Configuracao", href: "/instagram/config", icon: Settings, module: "INSTAGRAM" },
+      { label: "Dashboard", href: "/instagram", icon: Bot, module: Module.INSTAGRAM },
+      { label: "Aprovacoes", href: "/instagram/aprovacoes", icon: ClipboardCheck, module: Module.INSTAGRAM },
+      { label: "Boas-vindas", href: "/instagram/bem-vindos", icon: UserCheck, module: Module.INSTAGRAM },
+      { label: "Monitoramento", href: "/instagram/monitoramento", icon: Eye, module: Module.INSTAGRAM },
+      { label: "Logs", href: "/instagram/logs", icon: FileText, module: Module.INSTAGRAM },
+      { label: "Configuracao", href: "/instagram/config", icon: Settings, module: Module.INSTAGRAM },
     ],
   },
   {
     label: "Marketing",
     items: [
-      { label: "WhatsApp Send", href: "/wahasend", icon: MessageSquare, module: "WAHASEND" },
+      { label: "WhatsApp Send", href: "/wahasend", icon: MessageSquare, module: Module.WAHASEND },
     ],
   },
   {
     label: "VIP Data",
     items: [
-      { label: "Dashboard", href: "/vip-data", icon: Database, module: "VIP_DATA" },
-      { label: "Servicos", href: "/vip-data/servicos", icon: Wrench, module: "VIP_DATA" },
-      { label: "Relatorios", href: "/vip-data/relatorios", icon: FileText, module: "VIP_DATA" },
-      { label: "Calendario", href: "/vip-data/calendario", icon: CalendarDays, module: "VIP_DATA" },
-      { label: "Sincronizacao", href: "/vip-data/sincronizacao", icon: RefreshCw, module: "VIP_DATA" },
+      { label: "Dashboard", href: "/vip-data", icon: Database, module: Module.VIP_DATA },
+      { label: "Servicos", href: "/vip-data/servicos", icon: Wrench, module: Module.VIP_DATA },
+      { label: "Relatorios", href: "/vip-data/relatorios", icon: FileText, module: Module.VIP_DATA },
+      { label: "Calendario", href: "/vip-data/calendario", icon: CalendarDays, module: Module.VIP_DATA },
+      { label: "Sincronizacao", href: "/vip-data/sincronizacao", icon: RefreshCw, module: Module.VIP_DATA },
     ],
   },
   {
     label: "VIP Cam",
     items: [
-      { label: "Dashboard", href: "/vipcam", icon: Camera, module: "VIPCAM" },
-      { label: "Cameras", href: "/vipcam/cameras", icon: Eye, module: "VIPCAM" },
-      { label: "Pessoas", href: "/vipcam/pessoas", icon: Users, module: "VIPCAM" },
-      { label: "Analytics", href: "/vipcam/analytics", icon: BarChart3, module: "VIPCAM" },
-      { label: "Configuracao", href: "/vipcam/settings", icon: SlidersHorizontal, module: "VIPCAM" },
+      { label: "Dashboard", href: "/vipcam", icon: Camera, module: Module.VIPCAM },
+      { label: "Cameras", href: "/vipcam/cameras", icon: Eye, module: Module.VIPCAM },
+      { label: "Pessoas", href: "/vipcam/pessoas", icon: Users, module: Module.VIPCAM },
+      { label: "Analytics", href: "/vipcam/analytics", icon: BarChart3, module: Module.VIPCAM },
+      { label: "Configuracao", href: "/vipcam/settings", icon: SlidersHorizontal, module: Module.VIPCAM },
     ],
   },
 ]

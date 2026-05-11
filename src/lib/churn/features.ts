@@ -1,4 +1,4 @@
-import { BarbershopCliente } from "@/generated/prisma/client"
+import { BarbershopCliente } from "@prisma/client"
 
 /**
  * Calculate churn features for a client

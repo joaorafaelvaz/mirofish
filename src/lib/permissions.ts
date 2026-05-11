@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "./auth"
 import { prisma } from "./prisma"
-import type { Module, Role } from "@/generated/prisma/enums"
+import { Module, Role } from "@/generated/prisma/enums"
 import { cookies } from "next/headers"
 
 export type TenantFilter = {
@@ -36,8 +36,8 @@ export async function getTenantFilter(): Promise<TenantFilter | null> {
     const units = await prisma.unit.findMany({
       where: { networkId },
       select: { id: true },
-    })
-    return { unitId: { in: units.map((u) => u.id) } }
+    }) as { id: string }[]
+    return { unitId: { in: units.map((u: { id: string }) => u.id) } }
   }
 
   if (role === "MULTIFRANQUEADO") {
@@ -76,13 +76,13 @@ export async function getUserModules(): Promise<Module[]> {
 
   if (session.user.role === "SUPER_ADMIN") {
     return [
-      "BARBERSHOP",
-      "LINKFOOD",
-      "WAHASEND",
-      "VIPCAM",
-      "VIP_DATA",
-      "TOTALIA",
-      "INSTAGRAM",
+      Module.BARBERSHOP,
+      Module.LINKFOOD,
+      Module.WAHASEND,
+      Module.VIPCAM,
+      Module.VIP_DATA,
+      Module.TOTALIA,
+      Module.INSTAGRAM,
     ]
   }
 
@@ -91,11 +91,11 @@ export async function getUserModules(): Promise<Module[]> {
     select: { module: true },
   })
 
-  return [...new Set(permissions.map((p) => p.module))]
+  return [...new Set((permissions as { module: Module }[]).map((p) => p.module))]
 }
 
 export function canManageUsers(role: Role): boolean {
-  return ["SUPER_ADMIN", "FRANQUEADOR", "GERENTE"].includes(role)
+  return [Role.SUPER_ADMIN, Role.FRANQUEADOR, Role.GERENTE].includes(role)
 }
 
 export async function getUserUnits() {

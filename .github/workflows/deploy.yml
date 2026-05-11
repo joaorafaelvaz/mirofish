@@ -31,10 +31,17 @@ jobs:
       - name: Generate Prisma Client
         run: |
           npx prisma generate --schema prisma/schema.prisma
-          ls -la src/generated/prisma/client/
+          ls -la src/prisma_client/
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build application
-        run: npm run build
+        run: |
+          # Clear Next.js cache to avoid stale module resolution
+          rm -rf .next/cache .next
+          npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Create deployment archive
         run: |

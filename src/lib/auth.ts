@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 import { prisma } from "./prisma"
-import type { Role } from "@/generated/prisma/enums"
+import { Role } from "@/generated/prisma/enums"
 
 declare module "next-auth" {
   interface Session {
@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
           role: user.role,
           networkId: user.networkId,
-          unitIds: user.units.map((u) => u.unitId),
+          unitIds: user.units.map((u: { unitId: string }) => u.unitId),
         }
       },
     }),

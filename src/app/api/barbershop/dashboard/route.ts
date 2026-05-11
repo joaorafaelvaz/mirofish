@@ -1,6 +1,17 @@
 import { handle, requireUnitId, apiOk } from "@/lib/totalia/crud"
 import { prisma } from "@/lib/prisma"
 
+type BarbershopVenda = {
+  valorLiquido: number | null
+  clienteId?: string
+  colaboradorId?: string
+}
+
+type BarbershopColaborador = {
+  id: string
+  nome: string
+}
+
 export const GET = handle(async (req) => {
   const unitId = await requireUnitId()
   const { searchParams } = new URL(req.url)
@@ -19,33 +30,33 @@ export const GET = handle(async (req) => {
       prisma.barbershopVenda.findMany({
         where: { unitId, vendaData: { gte: inicio, lte: fim } },
         select: { valorLiquido: true, clienteId: true, colaboradorId: true },
-      }),
+      }) as BarbershopVenda[],
       prisma.barbershopVenda.findMany({
         where: { unitId, vendaData: { gte: inicioAnterior, lte: fimAnterior } },
         select: { valorLiquido: true },
-      }),
+      }) as BarbershopVenda[],
       prisma.barbershopCliente.count({ where: { unitId } }),
       prisma.barbershopCliente.count({ where: { unitId, statusCliente: "ativo" } }),
       prisma.barbershopColaborador.findMany({
         where: { unitId, ativo: true },
         select: { id: true, nome: true },
-      }),
+      }) as BarbershopColaborador[],
     ])
 
-  const faturamento = vendasMes.reduce((s, v) => s + (v.valorLiquido ?? 0), 0)
-  const faturamentoAnterior = vendasMesAnterior.reduce((s, v) => s + (v.valorLiquido ?? 0), 0)
+  const faturamento = vendasMes.reduce((s: number, v: BarbershopVenda) => s + (v.valorLiquido ?? 0), 0)
+  const faturamentoAnterior = vendasMesAnterior.reduce((s: number, v: BarbershopVenda) => s + (v.valorLiquido ?? 0), 0)
   const atendimentos = vendasMes.length
   const ticketMedio = atendimentos > 0 ? faturamento / atendimentos : 0
-  const clientesUnicos = new Set(vendasMes.map((v) => v.clienteId).filter(Boolean)).size
+  const clientesUnicos = new Set(vendasMes.map((v: BarbershopVenda) => v.clienteId).filter(Boolean)).size
 
   // Por barbeiro
-  const porBarbeiro = colaboradores.map((c) => {
-    const cv = vendasMes.filter((v) => v.colaboradorId === c.id)
+  const porBarbeiro = colaboradores.map((c: BarbershopColaborador) => {
+    const cv = vendasMes.filter((v: BarbershopVenda) => v.colaboradorId === c.id)
     return {
       id: c.id,
       nome: c.nome,
       atendimentos: cv.length,
-      faturamento: cv.reduce((s, v) => s + (v.valorLiquido ?? 0), 0),
+      faturamento: cv.reduce((s: number, v: BarbershopVenda) => s + (v.valorLiquido ?? 0), 0),
     }
   })
 
@@ -60,10 +71,10 @@ export const GET = handle(async (req) => {
     const v = await prisma.barbershopVenda.findMany({
       where: { unitId, vendaData: { gte: ini, lte: fim2 } },
       select: { valorLiquido: true },
-    })
+    }) as BarbershopVenda[]
     evolucao.push({
       mes: `${String(m).padStart(2, "0")}/${a}`,
-      faturamento: v.reduce((s, x) => s + (x.valorLiquido ?? 0), 0),
+      faturamento: v.reduce((s: number, x: BarbershopVenda) => s + (x.valorLiquido ?? 0), 0),
       atendimentos: v.length,
     })
   }

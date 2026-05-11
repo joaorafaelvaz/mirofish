@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
+import { Module } from "@/generated/prisma/enums"
 import { WizardProvider } from "@/lib/wahasend/wizard-context"
 import Wizard from "@/components/wahasend/wizard"
 
 export default async function WahasendPage() {
-  const hasAccess = await hasModuleAccess("WAHASEND")
+  const hasAccess = await hasModuleAccess(Module.WAHASEND)
   if (!hasAccess) redirect("/")
 
   return (

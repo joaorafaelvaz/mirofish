@@ -1,11 +1,16 @@
 import { handle, requireUnitId, apiOk } from "@/lib/totalia/crud"
 import { prisma } from "@/lib/prisma"
 
+type BarbershopConfig = {
+  chave: string
+  valor: any
+}
+
 export const GET = handle(async () => {
   const unitId = await requireUnitId()
   const rows = await prisma.barbershopConfig.findMany({ where: { unitId } })
   // Return as key/value map
-  const config = Object.fromEntries(rows.map((r) => [r.chave, r.valor]))
+  const config = Object.fromEntries(rows.map((r: BarbershopConfig) => [r.chave, r.valor]))
   return apiOk(config)
 })
 

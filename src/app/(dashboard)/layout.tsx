@@ -27,7 +27,7 @@ export default async function DashboardLayout({
     session.user.role
   )
 
-  const unitOptions = units.map((u) => ({
+  const unitOptions = (units as any[]).map((u) => ({
     id: u.id,
     name: u.name,
     networkName: u.network.name,

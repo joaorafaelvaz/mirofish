@@ -368,7 +368,9 @@ export async function syncVendas(
     select: { id: true, erpId: true },
   })
   const colaboradorMap = Object.fromEntries(
-    colaboradores.filter((c) => c.erpId != null).map((c) => [c.erpId!, c.id])
+    colaboradores
+      .filter((c: { erpId: number | null }) => c.erpId != null)
+      .map((c: { erpId: number; id: string }) => [c.erpId, c.id] as const)
   )
 
   // Buscar mapa cliente erpId → platform id
@@ -377,7 +379,9 @@ export async function syncVendas(
     select: { id: true, erpId: true },
   })
   const clienteMap = Object.fromEntries(
-    clientes.filter((c) => c.erpId != null).map((c) => [c.erpId!, c.id])
+    clientes
+      .filter((c: { erpId: number | null }) => c.erpId != null)
+      .map((c: { erpId: number; id: string }) => [c.erpId, c.id] as const)
   )
 
   for (const venda of vendas) {
@@ -535,7 +539,9 @@ export async function syncFolgas(unitId: string, erpUnidadeId: number): Promise<
     select: { id: true, erpId: true, nome: true },
   })
   const colaboradorMap = Object.fromEntries(
-    colaboradores.filter((c) => c.erpId != null).map((c) => [c.erpId!, c])
+    colaboradores
+      .filter((c: { erpId: number | null }) => c.erpId != null)
+      .map((c: { erpId: number; id: string; nome: string }) => [c.erpId, c] as const)
   )
 
   for (const row of rows) {

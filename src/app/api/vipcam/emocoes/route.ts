@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { requireUnitId, handle, apiOk } from "@/lib/totalia/crud"
 import { subHours } from "date-fns"
 
+type EmocaoDominanteGroup = {
+  emocaoDominante: string | null
+  _count: { id: number }
+}
+
 export const GET = handle(async (req) => {
   const unitId = await requireUnitId()
   const { searchParams } = new URL(req.url)
@@ -39,7 +44,7 @@ export const GET = handle(async (req) => {
   })
 
   return apiOk({
-    distribuicao: distribuicao.map((d) => ({
+    distribuicao: distribuicao.map((d: EmocaoDominanteGroup) => ({
       emocao: d.emocaoDominante ?? "desconhecido",
       count: d._count.id,
     })),

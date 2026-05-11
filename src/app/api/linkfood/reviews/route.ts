@@ -1,6 +1,12 @@
 import { handle, requireUnitId, apiOk } from "@/lib/totalia/crud"
 import { prisma } from "@/lib/prisma"
 
+type LinkfoodReview = {
+  rating: number
+  platform: string
+  sentiment: string
+}
+
 export const GET = handle(async (req) => {
   const unitId = await requireUnitId()
   const { searchParams } = new URL(req.url)
@@ -70,10 +76,10 @@ async function recalcSummary(unitId: string, businessId: string) {
   const reviews = await prisma.linkfoodReview.findMany({
     where: { unitId, businessId },
     select: { rating: true, platform: true, sentiment: true },
-  })
+  }) as LinkfoodReview[]
   if (!reviews.length) return
 
-  const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+  const avg = reviews.reduce((s: number, r: LinkfoodReview) => s + r.rating, 0) / reviews.length
   const byPlatform: Record<string, { count: number; sum: number }> = {}
   const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
   const sent = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 }

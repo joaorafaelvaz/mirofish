@@ -1,6 +1,10 @@
 import { handle, requireUnitId, apiOk } from "@/lib/totalia/crud"
 import { prisma } from "@/lib/prisma"
 
+type LinkfoodReviewSummary = {
+  averageRating: number
+}
+
 export const GET = handle(async () => {
   const unitId = await requireUnitId()
 
@@ -28,7 +32,7 @@ export const GET = handle(async () => {
     prisma.linkfoodReviewSummary.findMany({
       where: { business: { unitId } },
       include: { business: { select: { name: true } } },
-    }),
+    }) as LinkfoodReviewSummary[],
   ])
 
   // Average across all businesses

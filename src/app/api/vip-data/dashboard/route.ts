@@ -2,6 +2,12 @@ import { prisma } from "@/lib/prisma"
 import { requireUnitId, handle, apiOk } from "@/lib/totalia/crud"
 import { startOfMonth, subMonths, format } from "date-fns"
 
+type BarbershopVenda = {
+  vendaData?: Date | null
+  valorLiquido?: number | null
+  colaboradorId?: string | null
+}
+
 export const GET = handle(async () => {
   const unitId = await requireUnitId()
   const now = new Date()
@@ -13,7 +19,7 @@ export const GET = handle(async () => {
     where: { unitId },
     orderBy: { vendaData: "desc" },
     take: 1000,
-  })
+  }) as BarbershopVenda[]
 
   const vendasMesAtual = vendas.filter((v) => {
     const mes = format(v.vendaData ?? new Date(0), "yyyy-MM")
